@@ -1,0 +1,5 @@
+Initialising new game options...   : [20, 07 2020 13:05:37]
+Finished new game options.   : [20, 07 2020 13:05:37]
+Initialised   : [20, 07 2020 13:05:37]
+FINISHED
+

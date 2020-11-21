@@ -1,0 +1,8 @@
+Initialising new game options...   : [20, 10 2020 14:13:53]
+Finished new game options.   : [20, 10 2020 14:13:53]
+Initialised   : [20, 10 2020 14:13:53]
+FINISHED
+
+Generated subtype: wh2_dlc15_hef_imrik is the same subtype in faction: wh_main_ksl_kislev, Not replacing.   : [20, 10 2020 14:13:55]
+FINISHED
+

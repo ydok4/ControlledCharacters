@@ -1,0 +1,367 @@
+local CRPSubcultureResourcesCache = {
+
+};
+
+local CRPRecruitmentPoolResourcesCache = {
+
+};
+
+function InitialiseResourcesCache()
+    -- Subculture resources
+    CRPSubcultureResourcesCache = {};
+    -- Recruitment pool resources
+    for subcultureKey, subcultureData in pairs(_G.MC_CC_Resources.RecruitmentPoolResources) do
+        if CRPSubcultureResourcesCache[subcultureKey] == nil then
+            CRPSubcultureResourcesCache[subcultureKey] = {
+                SupportedSubtypes = {},
+            };
+        end
+        local subcultureFactionData = subcultureData[subcultureKey];
+        if subcultureFactionData ~= nil then
+            for poolKey, poolData in pairs(subcultureFactionData.FactionPools) do
+                poolData.SubPoolBonusSize = 0;
+                for agentSubTypeKey, agentSubTypeData in pairs(poolData.AgentSubTypes) do
+                    if CRPSubcultureResourcesCache[subcultureKey].SupportedSubtypes[agentSubTypeKey] == nil then
+                        CRPSubcultureResourcesCache[subcultureKey].SupportedSubtypes[agentSubTypeKey] = true;
+                    end
+                    if agentSubTypeData == false then
+                        poolData.AgentSubTypes[agentSubTypeKey] = nil;
+                    end
+                end
+            end
+            for factionKey, factionData in pairs(subcultureData) do
+                if factionKey ~= subcultureKey then
+                    if factionData.FactionPools ~= nil then
+                        -- If they aren't explicitly disabled (or changed) copy data from the subculture resources
+                        for poolKey, poolData in pairs(subcultureFactionData.FactionPools) do
+                            local factionResources = factionData.FactionPools[poolKey];
+                            if factionResources == false then
+                                factionData.FactionPools[poolKey] = nil;
+                            else
+                                if factionResources == nil then
+                                    factionData.FactionPools[poolKey] = {};
+                                    factionResources = factionData.FactionPools[poolKey];
+                                end
+                                local subcultureResources = subcultureFactionData.FactionPools[poolKey];
+                                if factionResources.AgentSubTypes == nil then
+                                    factionResources.AgentSubTypes = subcultureResources.AgentSubTypes;
+                                end
+                                if factionResources.SubPoolInitialMinSize == nil then
+                                    factionResources.SubPoolInitialMinSize = subcultureResources.SubPoolInitialMinSize;
+                                end
+                                if factionResources.SubPoolMaxSize == nil then
+                                    factionResources.SubPoolMaxSize = subcultureResources.SubPoolMaxSize;
+                                end
+                            end
+                        end
+                    end
+                    out("MC_CC: Setting default pools for faction: "..factionKey);
+                    -- Set data for defined pools to default values if they are missing
+                    for factionPoolKey, factionPoolData in pairs(factionData.FactionPools) do
+                        factionPoolData.SubPoolBonusSize = 0;
+                        for agentSubtypeKey, agentSubTypeData in pairs(factionPoolData.AgentSubTypes) do
+                            if CRPSubcultureResourcesCache[subcultureKey].SupportedSubtypes[agentSubtypeKey] == nil then
+                                CRPSubcultureResourcesCache[subcultureKey].SupportedSubtypes[agentSubtypeKey] = true;
+                            end
+                            if agentSubTypeData == false then
+                                factionPoolData.AgentSubTypes[agentSubtypeKey] = nil;
+                            elseif agentSubTypeData.BonusCost == nil
+                            and subcultureFactionData.FactionPools[factionPoolKey] ~= nil
+                            and subcultureFactionData.FactionPools[factionPoolKey].AgentSubTypes[agentSubtypeKey] ~= nil
+                            and subcultureFactionData.FactionPools[factionPoolKey].AgentSubTypes[agentSubtypeKey].BonusCost ~= nil then
+                                agentSubTypeData.BonusCost = subcultureFactionData.FactionPools[factionPoolKey].AgentSubTypes[agentSubtypeKey].BonusCost;
+                            end
+                        end
+                    end
+                    if factionData.LordPoolMaxSize == nil then
+                        factionData.LordPoolMaxSize = subcultureFactionData.LordPoolMaxSize;
+                    end
+                end
+            end
+        end
+    end
+    CRPRecruitmentPoolResourcesCache = _G.MC_CC_Resources.RecruitmentPoolResources;
+end
+
+function IsSupportedSubCulture(subculture)
+    if CRPRecruitmentPoolResourcesCache[subculture] then
+        return true;
+    else
+        return false;
+    end
+end
+
+function IsRogueArmy(factionName)
+    if CRPRecruitmentPoolResourcesCache["wh_rogue_armies"] ~= nil
+    and CRPRecruitmentPoolResourcesCache["wh_rogue_armies"][factionName] ~= nil then
+        return true;
+    else
+        return false;
+    end
+end
+
+function IsCharacterSupported(character)
+    local subcultureKey = character:faction():subculture();
+    local characterSubtypeKey = character:character_subtype_key();
+    if CRPSubcultureResourcesCache[subcultureKey] ~= nil
+    and CRPSubcultureResourcesCache[subcultureKey].SupportedSubtypes[characterSubtypeKey] ~= nil then
+        return true;
+    end
+    return false;
+end
+
+function GetSubCulturePoolResources(subcultureKey)
+    local subCulturePoolResources = CRPRecruitmentPoolResourcesCache[subcultureKey][subcultureKey];
+    if subCulturePoolResources ~= nil then
+        return subCulturePoolResources;
+    end
+    return {};
+end
+
+function IsUniquePoolResourcesForFaction(faction)
+    local subCulturePoolResources = CRPRecruitmentPoolResourcesCache[faction:subculture()];
+    local factionName = faction:name();
+    -- I couldn't store skull-takerz as a key in the lua table because of the -
+    -- So this takes care of that edge case
+    if faction:name() == "wh_main_grn_skull-takerz" then
+        factionName = "wh_main_grn_skull_takerz";
+    end
+
+    if subCulturePoolResources == nil then
+        return true;
+    elseif subCulturePoolResources[factionName] then
+        return true;
+    end
+    return false;
+end
+
+function GetFactionPoolResources(faction)
+    local subCulturePoolResources = CRPRecruitmentPoolResourcesCache[faction:subculture()];
+    local factionName = faction:name();
+    -- I couldn't store skull-takerz as a key in the lua table because of the -
+    -- So this takes care of that edge case
+    if faction:name() == "wh_main_grn_skull-takerz" then
+        factionName = "wh_main_grn_skull_takerz";
+    end
+
+    if subCulturePoolResources == nil then
+        return CRPRecruitmentPoolResourcesCache["wh_rogue_armies"][factionName];
+    elseif subCulturePoolResources[factionName] then
+        return subCulturePoolResources[factionName];
+    else
+        return subCulturePoolResources[faction:subculture()];
+    end
+end
+function GetReplacementLordsForFaction(faction)
+    local factionResources = GetFactionPoolResources(faction);
+    return factionResources.LordsToReplace;
+end
+
+function GetDefaultLordsForFaction(faction, subcultureKey)
+    local subculture = '';
+    if subcultureKey ~= nil then
+        subculture = subcultureKey;
+    else
+        subculture = faction:subculture();
+    end
+    local subcultureResources = CRPSubcultureResourcesCache[subculture];
+    if subcultureResources == nil then
+        return nil;
+    end
+    return subcultureResources.DefaultLords;
+end
+
+function GetRewardsForFaction(faction)
+    local subcultureResources = CRPSubcultureResourcesCache[faction:subculture()];
+    if subcultureResources == nil then
+        return nil;
+    end
+    return subcultureResources.Rewards;
+end
+
+function GetRewardByKey(faction, rewardKey)
+    local rewardsForFaction = GetRewardsForFaction(faction);
+    if rewardsForFaction ~= nil then
+        local reward = rewardsForFaction[rewardKey];
+        if reward ~= nil then
+            return reward;
+        end
+    end
+    return nil;
+end
+
+function GetRewardForDilemma(faction, dilemmaKey, choiceKey)
+    local rewardsForFaction = GetRewardsForFaction(faction);
+    if rewardsForFaction ~= nil then
+        local rewardsForDilemma = rewardsForFaction[dilemmaKey];
+        if rewardsForDilemma ~= nil
+        and rewardsForDilemma.RewardsForChoice ~= nil
+        and rewardsForDilemma.RewardsForChoice[choiceKey] ~= nil then
+            return rewardsForDilemma.RewardsForChoice[choiceKey];
+        end
+    end
+    return nil;
+end
+
+function GetHeroesForFaction(faction)
+    local subcultureResources = CRPSubcultureResourcesCache[faction:subculture()];
+    if subcultureResources == nil then
+        return nil;
+    end
+    return subcultureResources.Heroes;
+end
+
+function GetAgentSubTypeResourcesForCharacter(character)
+    local factionAgentSubTypeResources = GetAgentSubTypeResourcesForFaction(character:faction());
+    return factionAgentSubTypeResources[character:character_subtype_key()];
+end
+
+function IsSupportedSubtype(character)
+    local subcultureResources = CRPSubcultureResourcesCache[character:faction():subculture()];
+    if subcultureResources.AgentSubTypes[character:character_subtype_key()] ~= nil then
+        return true;
+    else
+        return false;
+    end
+end
+
+function GetAgentSubTypeResourcesForFaction(faction)
+    local subcultureResources = CRPSubcultureResourcesCache[faction:subculture()];
+    if subcultureResources == nil then
+        return nil;
+    end
+    return subcultureResources.AgentSubTypes;
+end
+
+function GetMountResources(faction)
+    local subcultureResources = CRPSubcultureResourcesCache[faction:subculture()];
+    if subcultureResources == nil then
+        return nil;
+    end
+    return subcultureResources.MountData;
+end
+
+function SetSubCultureRecruitmentPoolsForFaction(faction)
+    local subCulturePoolResources = CRPRecruitmentPoolResourcesCache[faction:subculture()];
+    local factionName = faction:name();
+    -- I couldn't store skull-takerz as a key in the lua table because of the -
+    -- So this takes care of that edge case
+    if faction:name() == "wh_main_grn_skull-takerz" then
+        factionName = "wh_main_grn_skull_takerz";
+    end
+    local defaultResources = subCulturePoolResources[faction:subculture()];
+    CRPRecruitmentPoolResourcesCache[faction:subculture()][factionName] = {
+        HeroPools = {},
+        HeroPoolMaxSize = defaultResources.HeroPoolMaxSize,
+        FactionPools = {},
+        LordPoolMaxSize = defaultResources.LordPoolMaxSize,
+    };
+    local factionReference = CRPRecruitmentPoolResourcesCache[faction:subculture()][factionName];
+    for poolKey, poolData in pairs(defaultResources.HeroPools) do
+        factionReference.HeroPools[poolKey] = {
+            AgentSubTypes = {},
+            SubPoolInitialMinSize = poolData.SubPoolInitialMinSize,
+            SubPoolMaxSize = poolData.SubPoolMaxSize,
+            SubPoolBonusSize = 0,
+        };
+        for agentSubtypeKey, agentSubTypeData in pairs(poolData.AgentSubTypes) do
+            factionReference.HeroPools[poolKey].AgentSubTypes[agentSubtypeKey] = {
+                MaximumPercentage = agentSubTypeData.MaximumPercentage,
+            };
+        end
+    end
+    for poolKey, poolData in pairs(defaultResources.FactionPools) do
+        factionReference.FactionPools[poolKey] = {
+            AgentSubTypes = {},
+            SubPoolInitialMinSize = poolData.SubPoolInitialMinSize,
+            SubPoolMaxSize = poolData.SubPoolMaxSize,
+            SubPoolBonusSize = 0,
+        };
+        for agentSubtypeKey, agentSubTypeData in pairs(poolData.AgentSubTypes) do
+            factionReference.FactionPools[poolKey].AgentSubTypes[agentSubtypeKey] = {
+                MaximumPercentage = agentSubTypeData.MaximumPercentage,
+            };
+        end
+    end
+end
+
+-- The pool limit should be greater than or equal to the highest Agent Sub Type
+-- maximum limit in that pool
+function RecalculatePoolLimits(humanFaction, faction)
+    local humanFactionKey = humanFaction:name();
+    local subcultureKey = faction:subculture();
+    local subcultureResources = GetDefaultLordsForFaction(faction);
+    local defaultLords = {};
+    for index, agentSubtypeKey in pairs(subcultureResources) do
+        defaultLords[agentSubtypeKey] = true;
+    end
+    local factionKey = faction:name();
+    if CRPRecruitmentPoolResourcesCache[subcultureKey] ~= nil
+    and CRPRecruitmentPoolResourcesCache[subcultureKey][factionKey] ~= nil then
+        local factionLimits = CRPRecruitmentPoolResourcesCache[subcultureKey][factionKey];
+        -- Heroes
+        local totalMaxSizeOfHeroPools = 0;
+        local totalSizeOfDefaultHeroPools = 0;
+        for heroPoolKey, heroPool in pairs(factionLimits.HeroPools) do
+            totalMaxSizeOfHeroPools = totalMaxSizeOfHeroPools + heroPool.SubPoolMaxSize;
+            if subcultureResources ~= nil
+            and factionKey ~= humanFactionKey then
+                for agentSubtypeKey, agentSubTypeData in pairs(heroPool.AgentSubTypes) do
+                    if defaultLords[agentSubtypeKey] == true then
+                        totalSizeOfDefaultHeroPools = totalSizeOfDefaultHeroPools + heroPool.SubPoolMaxSize;
+                    end
+                end
+            end
+        end
+        if totalMaxSizeOfHeroPools - totalSizeOfDefaultHeroPools < factionLimits.HeroPoolMaxSize - totalSizeOfDefaultHeroPools then
+            for i = 1, (factionLimits.HeroPoolMaxSize - totalMaxSizeOfHeroPools - totalSizeOfDefaultHeroPools) do
+                if next(factionLimits.HeroPools) then
+                    local selectedPoolKey = GetRandomObjectKeyFromList(factionLimits.HeroPools);
+                    factionLimits.HeroPools[selectedPoolKey].SubPoolMaxSize = factionLimits.HeroPools[selectedPoolKey].SubPoolMaxSize + 1;
+                end
+            end
+        end
+        -- Lords
+        local totalMaxSizeOfLordPools = 0;
+        local totalSizeOfDefaultLordPools = 0;
+        for factionPoolKey, factionPool in pairs(factionLimits.FactionPools) do
+            totalMaxSizeOfLordPools = totalMaxSizeOfLordPools + factionPool.SubPoolMaxSize;
+            if subcultureResources ~= nil
+            and factionKey ~= humanFactionKey then
+                for agentSubtypeKey, agentSubTypeData in pairs(factionPool.AgentSubTypes) do
+                    if defaultLords[agentSubtypeKey] == true then
+                        totalSizeOfDefaultLordPools = totalSizeOfDefaultLordPools + factionPool.SubPoolMaxSize;
+                    end
+                end
+            end
+        end
+        if totalMaxSizeOfLordPools - totalSizeOfDefaultLordPools < factionLimits.LordPoolMaxSize - totalSizeOfDefaultLordPools then
+            for i = 1, (factionLimits.LordPoolMaxSize - totalMaxSizeOfLordPools - totalSizeOfDefaultLordPools) do
+                local selectedPoolKey = GetRandomObjectKeyFromList(factionLimits.FactionPools);
+                factionLimits.FactionPools[selectedPoolKey].SubPoolMaxSize = factionLimits.FactionPools[selectedPoolKey].SubPoolMaxSize + 1;
+            end
+        end
+    end
+end
+
+function GetStringifiedUnitList(character)
+    if character:has_military_force() == false then
+        return "";
+    end
+    local unitList = character:military_force():unit_list();
+
+    local unitString = "";
+    -- This starts at one so it skips the first unit, which is the general
+    for i = 0, unitList:num_items() - 1 do
+        -- If this is the last unit we should not add a comma to the end
+        local unitKey = unitList:item_at(i):unit_key();
+        if i ~= 0 then
+            if i == unitList:num_items() - 1 then
+                unitString = unitString..unitKey;
+            else
+                unitString = unitString..unitKey..",";
+            end
+        end
+    end
+    return unitString;
+end
