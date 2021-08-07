@@ -54,6 +54,18 @@ function GetMixuDwarfsRecruitmentPoolData()
                     SubPoolMaxSize = 4,
                 },
             },
+            FactionPools = {
+                DaemonSlayers = {
+                    AgentSubTypes = {
+                        dwf_daemon_slayer = {
+                            MaximumPercentage = 100,
+                            BonusCost = 0,
+                        },
+                    },
+                    SubPoolInitialMinSize = 1,
+                    SubPoolMaxSize = 1,
+                },
+            },
         },
     };
 end

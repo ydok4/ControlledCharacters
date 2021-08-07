@@ -45,24 +45,6 @@ function GetLizardmenRecruitmentPoolData()
                     SubPoolInitialMinSize = 2,
                     SubPoolMaxSize = 4,
                 },
-                KroxigorAncients = {
-                    AgentSubTypes = {
-                        wh2_dlc13_lzd_kroxigor_ancient = {
-                            MaximumPercentage = 100,
-                        },
-                    },
-                    SubPoolInitialMinSize = 0,
-                    SubPoolMaxSize = 0,
-                },
-                RedCrestedSkinkChiefs = {
-                    AgentSubTypes = {
-                        wh2_dlc12_lzd_red_crested_skink_chief = {
-                            MaximumPercentage = 100,
-                        },
-                    },
-                    SubPoolInitialMinSize = 0,
-                    SubPoolMaxSize = 0,
-                },
             },
             LordPoolMaxSize = 4,
         },
@@ -89,7 +71,7 @@ function GetLizardmenRecruitmentPoolData()
                     SubPoolInitialMinSize = 1,
                     SubPoolMaxSize = 1,
                 },--]]
-                --[[SaurusOldBloods = {
+                SaurusOldBloods = {
                     AgentSubTypes = {
                         wh2_main_lzd_saurus_old_blood = {
                             MaximumPercentage = 100,
@@ -106,8 +88,8 @@ function GetLizardmenRecruitmentPoolData()
                     },
                     SubPoolInitialMinSize = 0,
                     SubPoolMaxSize = 1,
-                },--]]
-                RedCrestedSkinkChiefs = {
+                },
+                --[[RedCrestedSkinkChiefs = {
                     AgentSubTypes = {
                         wh2_dlc12_lzd_red_crested_skink_chief = {
                             MaximumPercentage = 100,
@@ -115,7 +97,7 @@ function GetLizardmenRecruitmentPoolData()
                     },
                     SubPoolInitialMinSize = 0,
                     SubPoolMaxSize = 1,
-                },
+                },--]]
             },
             LordPoolMaxSize = 4,
         },

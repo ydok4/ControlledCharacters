@@ -14,7 +14,7 @@ function GetMixuWoodElfRecruitmentPoolData()
                 },
             },
             FactionPools = {
-                SpellWeavers = {
+                --[[SpellWeavers = {
                     AgentSubTypes = {
                         wef_spellweaver = {
                             MaximumPercentage = 50,
@@ -28,12 +28,12 @@ function GetMixuWoodElfRecruitmentPoolData()
                     },
                     SubPoolInitialMinSize = 1,
                     SubPoolMaxSize = 2,
-                },
+                },--]]
             },
         },
 
         -- Major Factions
-        wh_dlc05_wef_argwylon = {
+        --[[wh_dlc05_wef_argwylon = {
             FactionPools = {
                 SpellWeavers = {
                     AgentSubTypes = {
@@ -86,6 +86,6 @@ function GetMixuWoodElfRecruitmentPoolData()
                     SubPoolMaxSize = 1,
                 },
             },
-        },
+        },--]]
     };
 end

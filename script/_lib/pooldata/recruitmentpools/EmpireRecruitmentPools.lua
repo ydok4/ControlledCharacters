@@ -102,13 +102,6 @@ function GetEmpireRecruitmentPoolData()
             LordPoolMaxSize = 4,
         },
 
-        -- Golden Order (Gelt)
-        wh2_dlc13_emp_golden_order = {
-            FactionPools = {
-
-            },
-            LordPoolMaxSize = 4,
-        },
         -- Huntsmarshals expedition
         wh2_dlc13_emp_the_huntmarshals_expedition = {
             FactionPools = {

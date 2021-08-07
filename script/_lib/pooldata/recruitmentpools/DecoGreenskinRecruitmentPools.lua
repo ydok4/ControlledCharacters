@@ -124,5 +124,34 @@ function GetDecoForestGoblinResources()
                 },
             },
         },
+        wh2_dlc16_grn_creeping_death = {
+            FactionPools = {
+                GreenskinWarbosses = {
+                    AgentSubTypes = {
+                        grn_orc_warboss = false,
+                        wh_grn_forest_goblin_warboss = {
+                            MaximumPercentage = 100,
+                        },
+                    },
+                    SubPoolInitialMinSize = 1,
+                    SubPoolMaxSize = 4,
+                },
+                GreenskinShamans = {
+                    AgentSubTypes = {
+                        grn_goblin_great_shaman = {
+                            MaximumPercentage = 100,
+                        },
+                    },
+                    SubPoolInitialMinSize = 1,
+                    SubPoolMaxSize = 2,
+                },
+            },
+            LordPoolMaxSize = 4,
+            LordsToReplace = {
+                grn_orc_warboss = {
+                    replacementKey = "wh_grn_forest_goblin_warboss",
+                },
+            },
+        },
     };
 end

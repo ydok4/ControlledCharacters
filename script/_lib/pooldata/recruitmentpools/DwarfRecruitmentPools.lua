@@ -91,7 +91,7 @@ function GetDwarfRecruitmentPoolData()
                         },
                     },
                     SubPoolInitialMinSize = 1,
-                    SubPoolMaxSize = 6,
+                    SubPoolMaxSize = 4,
                 },
                 RuneLord = {
                     AgentSubTypes = {

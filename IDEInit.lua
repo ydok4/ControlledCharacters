@@ -3,7 +3,8 @@ testCharacter = {
     cqi = function() return 123 end,
     get_forename = function() return "Direfan"; end,
     get_surname = function() return "Cylostra"; end,
-    character_subtype_key = function() return "wh2_dlc15_hef_imrik"; end,
+    character_subtype_key = function() return "dwf_lord"; end,
+    character_subtype = function() return true; end,
     command_queue_index = function() end,
     has_military_force = function() return true end,
     military_force = function() return testMilitaryForce; end,
@@ -12,6 +13,7 @@ testCharacter = {
     logical_position_x = function() return 100; end,
     logical_position_y = function() return 110; end,
     command_queue_index = function() return 123; end,
+    is_faction_leader = function() return false; end,
     character_type = function(self, type)
         if type == "colonel" then
             return false;
@@ -23,6 +25,8 @@ testCharacter = {
     has_region = function() return true; end,
     has_effect_bundle = function() return false; end,
     is_male = function() return false; end,
+    battles_fought = function() return 0; end,
+    turns_at_sea = function() return 0; end,
 }
 
 testMilitaryForce = {
@@ -44,13 +48,13 @@ testMilitaryForce = {
 humanFaction = {
     command_queue_index = function() return 10; end,
     name = function()
-        return "wh_main_ksl_kislev";
+        return "wh2_dlc16_wef_drycha";
     end,
     culture = function()
         return "wh2_main_hef_high_elves";
     end,
     subculture = function()
-        return "wh2_main_sc_hef_high_elves";
+        return "wh_dlc05_sc_wef_wood_elves";
     end,
     is_dead = function() return false; end,
     character_list = function()
@@ -154,13 +158,13 @@ pooledResourceFactor = {
 testFaction = {
     command_queue_index = function() return 10; end,
     name = function()
-        return "wh_main_ksl_kislev";
+        return "wh_main_dwf_karak_kadrin";
     end,
     culture = function()
         return "wh2_main_hef_high_elves";
     end,
     subculture = function()
-        return "wh2_main_sc_hef_high_elves";
+        return "wh_main_sc_dwf_dwarfs";
     end,
     is_dead = function() return false; end,
     character_list = function()

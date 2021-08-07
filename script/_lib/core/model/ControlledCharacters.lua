@@ -21,11 +21,6 @@ function ControlledCharacters:Initialise(core, enableLogging)
     -- Setup character generator
     self.CharacterGenerator = CharacterGenerator:new({});
     self.CharacterGenerator:Initialise(enableLogging);
-
-    if cm:is_new_game() then
-        self.Logger:Log("Initialising new game options...");
-        self:SetupNewGameOptions();
-    end
 end
 
 
@@ -46,11 +41,15 @@ function ControlledCharacters:SetupNewGameOptions()
                         if factionPoolResources.LordsToReplace[charSubType] ~= nil then
                             local replaceType = factionPoolResources.LordsToReplace[charSubType].replacementKey;
                             self.Logger:Log("Replacing character: "..charSubType.." with subtype: "..replaceType);
-                            self:ReplaceCharacter(character, replaceType);
+                            cm:callback(function()
+                                self:ReplaceCharacter(character, replaceType);
+                            end, 0.2);
                         elseif factionPoolResources.LordsToReplace.FactionLeader ~= nil
                         and character:cqi() == faction:faction_leader():cqi() then
                             self.Logger:Log("Replacing faction leader: "..charSubType.." with: "..factionPoolResources.LordsToReplace.FactionLeader);
-                            self:ReplaceCharacter(character, factionPoolResources.LordsToReplace.FactionLeader);
+                            cm:callback(function()
+                                self:ReplaceCharacter(character, factionPoolResources.LordsToReplace.FactionLeader);
+                            end, 0.2);
                         end
                     end
                 end
@@ -73,6 +72,24 @@ function ControlledCharacters:SetupListeners(core)
         end,
         true
     );
+
+    if cm:is_new_game() then
+        self.Logger:Log("Setting up new game listener");
+        core:add_listener(
+            "MC_CC_FactionTurnStart",
+            "FactionTurnStart",
+            function(context)
+                return cm:turn_number() == 1
+                and context:faction():is_human() == true;
+            end,
+            function(context)
+                self.Logger:Log("Setting up new game options...");
+                self:SetupNewGameOptions();
+                self.Logger:Log_Finished();
+            end,
+            false
+        );
+    end
 
     core:add_listener(
         "MC_CC_FactionTurnStart",
@@ -119,22 +136,29 @@ function ControlledCharacters:SetupListeners(core)
         function(context)
             local char = context:character();
             local faction = char:faction();
-            --[[self.Logger:Log("Character: "..char:character_subtype_key().." created for faction: "..faction:name());
-            if not cm:char_is_mobile_general_with_army(char) then
-                self.Logger:Log("Character created without army for faction: "..faction:name());
-            end
-            if self.CachedData.ExistingGenerals[tostring(char:command_queue_index())] then
-                self.Logger:Log("Character is cached already");
-            end
-            self.Logger:Log_Finished();--]]
-            return cm:char_is_mobile_general_with_army(char)
+            return (cm:char_is_mobile_general_with_army(char)
+            -- Should restrict this to fresh characters
+            and char:battles_fought() == 0
+            -- We let humans do whatever they want
             and not faction:is_human()
+            -- Faction leaders should not be replaced, although battles fought should be more than 0
+            and not char:is_faction_leader()
+            -- We blacklist some factions from generating for various reasons
             and self:IsExcludedFaction(faction) == false
-            and IsSupportedSubCulture(faction:subculture())
-            and not self.CachedData.ExistingGenerals[tostring(char:command_queue_index())];
+            -- Naturally we don't want to process a character that isn't supported
+            and IsCharacterSupported(char)
+            -- Ignore characters spawning in the chaos wastes or on the ocean, this should
+            -- fix most of the chaos invasion spawns
+            and char:has_region()
+            and char:turns_at_sea() == 0
+            -- and finally, if somehow they are still valid but we've already cached them, don't do it again
+            and not self.CachedData.ExistingGenerals[tostring(char:command_queue_index())])
+            -- For when testing in VSCode, is always false in game
+            or _G.IsIDE == true;
         end,
         function(context)
             local character = context:character();
+            -- This should never fire (char_is_mobile_general_with_army should handle this properly) but is handy to have a failsafe
             if character:character_type("colonel") and (character:military_force():is_armed_citizenry() == false or character:is_politician() == true) then
                 self.Logger:Log("Found colonel, ignoring...");
                 self.Logger:Log_Finished();
@@ -154,14 +178,19 @@ function ControlledCharacters:ProcessNewCharacter(character)
         self.Logger:Log_Finished();
         return;
     end
-    if cm:char_is_mobile_general_with_army(character) then
+    if cm:char_is_mobile_general_with_army(character)
+    and not character:is_faction_leader() then
         local replacementSubtype = self:GenerateSubtypeForFaction(character);
-        if replacementSubtype ~= character:character_subtype_key() then
+        local override = false;
+        if replacementSubtype ~= character:character_subtype_key()
+        or _G.IsIDE == true
+        or override == true then
             self.Logger:Log("Replacing character subtype:  "..character:character_subtype_key().." with: "..replacementSubtype.." in faction: "..factionKey);
             self:ReplaceCharacter(character, replacementSubtype);
         else
             self.Logger:Log("Generated subtype: "..replacementSubtype.." is the same subtype in faction: "..factionKey..", Not replacing.");
         end
+        self.Logger:Log("Character is in region: "..character:region():name());
         self.Logger:Log_Finished();
     end
 end
@@ -277,15 +306,15 @@ function ControlledCharacters:ReplaceCharacter(character, replacementSubType)
     local characterSurname = "";
     local canOriginalUseFemaleName = self.CharacterGenerator:GetGenderForAgentSubType(character:character_subtype_key());
     local canReplacementUseFemaleName = self.CharacterGenerator:GetGenderForAgentSubType(replacementSubType);
-    self.Logger:Log("canOriginalUseFemaleName: "..tostring(canOriginalUseFemaleName));
-    self.Logger:Log("canReplacementUseFemaleName: "..tostring(canReplacementUseFemaleName));
+    --self.Logger:Log("canOriginalUseFemaleName: "..tostring(canOriginalUseFemaleName));
+    --self.Logger:Log("canReplacementUseFemaleName: "..tostring(canReplacementUseFemaleName));
     if canOriginalUseFemaleName ~= canReplacementUseFemaleName then
-        self.Logger:Log("Generating gender specific name");
+        --self.Logger:Log("Generating gender specific name");
         local generatedName = self.CharacterGenerator:GetCharacterNameForSubculture(character:faction(), replacementSubType);
         characterForename = generatedName.clan_name;
         characterSurname = generatedName.forename;
     else
-        self.Logger:Log("Using original name");
+        --self.Logger:Log("Using original name");
         characterForename = character:get_forename();
         characterSurname = character:get_surname();
     end
@@ -304,7 +333,10 @@ function ControlledCharacters:ReplaceCharacter(character, replacementSubType)
         isFactionLeader = replacedCharacterIsFactionLeader;
         noUnits = invalidUnitList,
     };
-    cm:callback(function() self:CreateReplacementCharacter(characterData); end, 0);
+    if characterData.noUnits == true
+    or characterData.noUnits == false then
+        cm:callback(function() self:CreateReplacementCharacter(characterData); end, 0);
+    end
 end
 
 function ControlledCharacters:CreateReplacementCharacter(character)
@@ -328,7 +360,7 @@ function ControlledCharacters:CreateReplacementCharacter(character)
         character.isFactionLeader,
         function(cqi)
             self.Logger:Log("In created character callback for faction "..character.factionName.." with subtype "..character.subType);
-            self.Logger:Log("Character cqi is "..cqi);
+            self.Logger:Log("Character cqi is "..cqi.." old character cqi is: "..character.oldCharCqi);
             -- Move character back to original position
             cm:teleport_to("character_cqi:"..cqi, character.xPos, character.yPos, true);
             if character.noUnits then
@@ -370,20 +402,10 @@ function ControlledCharacters:CreateReplacementCharacter(character)
                     "MC_CC_CharacterConvalescedOrKilledAppointToArmy_"..cqi,
                     "CharacterConvalescedOrKilled",
                     function(context)
-                        local passListener = false;
-                        local char = context:character();
-                            if char:command_queue_index() == cqi
-                            or (not char:is_wounded()
-                            and not char:character_type("colonel")
-                            and char:faction():name() == character.factionName
-                            and char:character_subtype_key() == character.subType
-                            and char:get_forename() == character.foreName
-                            and char:get_surname() == character.surname) then
-                                passListener = true;
-                            end
-                        return passListener;
+                        return cqi == context:character():command_queue_index();
                     end,
                     function(context)
+                        self.Logger:Log("MC_CC_CharacterConvalescedOrKilledAppointToArmy Listener");
                         local characterCqi = context:character():command_queue_index();
                         local factionKey = context:character():faction():name();
                         cm:callback(function()
@@ -403,10 +425,6 @@ function ControlledCharacters:CreateReplacementCharacter(character)
                                     local character_list = faction:character_list();
                                     for i = 0, character_list:num_items() - 1 do
                                         local factionCharacter = character_list:item_at(i);
-                                        --[[if not factionCharacter:character_type("colonel") then
-                                            self.Logger:Log("Checking: "..i.." "..factionCharacter:character_subtype_key());
-                                            self.Logger:Log("is_wounded: "..tostring(factionCharacter:is_wounded()));
-                                        end--]]
                                         if factionCharacter:character_subtype_key() == character.subType
                                         and factionCharacter:get_forename() == character.foreName
                                         and factionCharacter:get_surname() == character.surname
@@ -417,7 +435,14 @@ function ControlledCharacters:CreateReplacementCharacter(character)
                                                 cm:stop_character_convalescing(newCharacterCqi);
                                             end
                                             self.Logger:Log("Appointing to mf "..character.mfCqi);
-                                            cm:appoint_character_to_force("character_cqi:"..factionCharacter:command_queue_index(), character.mfCqi);
+                                            local factionCharacterCqi = factionCharacter:command_queue_index();
+                                            -- This should be in a callback in case the character needs to be revived
+                                            cm:callback(function()
+                                                self.Logger:Log("Appointing character: "..factionCharacterCqi.." to force: "..character.mfCqi);
+                                                cm:appoint_character_to_force("character_cqi:"..factionCharacterCqi, character.mfCqi);
+                                                self.Logger:Log_Finished();
+                                            end,
+                                            0.2);
                                             self.CachedData.ExistingGenerals[tostring(newCharacterCqi)] = true;
                                             break;
                                         end
@@ -433,11 +458,19 @@ function ControlledCharacters:CreateReplacementCharacter(character)
                     false
                 );
                 cm:callback(function()
-                    self.Logger:Log("Killing character and force: "..cqi);
-                    cm:kill_character(cqi, true, true);
-                    self.Logger:Log_Finished();
+                    local char = cm:get_character_by_cqi(cqi);
+                    if char
+                    and not char:is_null_interface() then
+                        self.Logger:Log("Killing character and force: "..cqi);
+                        cm:kill_character(cqi, true, true);
+                        self.Logger:Log_Finished();
+                    else
+                        self.Logger:Log("Can't kill character, because null or missing");
+                        core:remove_listener("MC_CC_CharacterConvalescedOrKilledAppointToArmy_"..cqi);
+                        self.Logger:Log_Finished();
+                    end
                 end,
-                0);
+                0.1);
             end
             self.Logger:Log_Finished();
         end
@@ -449,10 +482,18 @@ function ControlledCharacters:CreateReplacementCharacter(character)
         "CharacterConvalescedOrKilled",
         function(context)
             return character.oldCharCqi == context:character():command_queue_index()
+            and not context:character():character_type("colonel");
         end,
         function(context)
-            cm:stop_character_convalescing(character.oldCharCqi);
-            cm:callback(function() cm:disable_event_feed_events(false, "", "", "character_ready_for_duty") end, 10);
+            local convalescedCharacter = context:character();
+            if not convalescedCharacter:is_null_interface() then
+                self.Logger:Log("Stopping character from convalescing: "..character.oldCharCqi);
+                cm:stop_character_convalescing(character.oldCharCqi);
+            else
+                self.Logger:Log("Convalesced character is null interface: "..character.oldCharCqi);
+            end
+            --cm:callback(function() cm:disable_event_feed_events(false, "", "", "character_ready_for_duty") end, 0.1);
+            self.Logger:Log_Finished();
         end,
         false
     );
@@ -477,7 +518,8 @@ function ControlledCharacters:IsExcludedFaction(faction)
     string.match(factionName, "separatists") ~= nil or
     factionName == "wh2_dlc13_lzd_defenders_of_the_great_plan" or
     factionName == "wh_dlc03_bst_beastmen_chaos" or
-    factionName == "wh2_dlc11_cst_vampire_coast_encounters"
+    factionName == "wh2_dlc11_cst_vampire_coast_encounters" or
+    factionName == "wh_main_nor_bjornling"
     then
         --self.Logger:Log("Faction is excluded");
         return true;

@@ -16,6 +16,12 @@ function a_crp_deco_patch()
         out("MC_CC: Finished loading Deco Kislev Patch");
     end
 
+    --[[if effect.get_localised_string("agent_subtypes_description_text_override_bst_bray_shaman_wild") ~= "" then
+        out("MC_CC: Loading Deco Beastmen patch");
+        require 'script/_lib/pooldata/recruitmentpools/DecoBeastmenRecruitmentPools'
+        _G.MC_CC_Resources.AddAdditionalRecruitmentPoolResources("wh_dlc03_sc_bst_beastmen", GetDecoBeastmenResources());
+    end--]]
+
     if anyLoaded == true then
         -- Load the name resources
         -- This is separate so I can use this in other mods

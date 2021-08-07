@@ -57,18 +57,8 @@ function GetMixuDataResources()
 			},
 			IsFemale = "false",
 		},
-		dwf_giant_slayer = {
+		dwf_dragon_slayer = {
 			AgentType = "dignitary",
-			ArtSetIds = {
-					"wh2_main_art_set_dwf_giant_slayer_1", "wh2_main_art_set_dwf_giant_slayer_2", "wh2_main_art_set_dwf_giant_slayer_3", "wh2_main_art_set_dwf_giant_slayer_4",
-			},
-			IsFemale = "false",
-		},
-		bst_doombull = {
-			AgentType = "general",
-			ArtSetIds = {
-					"wh2_main_art_set_bst_doombull_1", "wh2_main_art_set_bst_doombull_2", "wh2_main_art_set_bst_doombull_3",
-			},
 			IsFemale = "false",
 		},
 		wef_darkweaver = {
@@ -104,7 +94,7 @@ function GetMixuDataResources()
 			ArtSetIds = {
 					"wh2_main_art_set_nor_fimir_warlord_1", "wh2_main_art_set_nor_fimir_warlord_2", "wh2_main_art_set_nor_fimir_warlord_3", "wh2_main_art_set_nor_fimir_warlord_4",
 			},
-			IsFemale = "true",
+			IsFemale = "false",
 		},
 		nor_shaman_sorcerer_lord_death = {
 			AgentType = "general",
@@ -169,6 +159,13 @@ function GetMixuDataResources()
 			},
 			IsFemale = "false",
 		},
+		cst_ancient_syreen = {
+            AgentType = "spy",
+            ArtSetIds = {
+                    "mixu_art_set_cst_ancient_syreen_01", "mixu_art_set_cst_ancient_syreen_02", "mixu_art_set_cst_ancient_syreen_03",
+            },
+            IsFemale = "true",
+        },
 		emp_wizard_lord_metal = {
 			AgentType = "general",
 			ArtSetIds = {
@@ -188,6 +185,10 @@ function GetMixuDataResources()
 			ArtSetIds = {
 					"mixu_art_set_emp_wizard_lord_life_1", "mixu_art_set_emp_wizard_lord_life_2",
 			},
+			IsFemale = "false",
+		},
+		dwf_daemon_slayer = {
+			AgentType = "general",
 			IsFemale = "false",
 		},
 	};

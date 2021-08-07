@@ -1,8 +1,16 @@
-Initialising new game options...   : [20, 10 2020 14:13:53]
-Finished new game options.   : [20, 10 2020 14:13:53]
-Initialised   : [20, 10 2020 14:13:53]
+Setting up new game listener   : [25, 07 2021 14:00:46]
+Initialised   : [25, 07 2021 14:00:46]
 FINISHED
 
-Generated subtype: wh2_dlc15_hef_imrik is the same subtype in faction: wh_main_ksl_kislev, Not replacing.   : [20, 10 2020 14:13:55]
+Replacing character subtype:  dwf_lord with: dwf_lord in faction: wh_main_dwf_karak_kadrin   : [25, 07 2021 14:00:47]
+In created character callback for faction wh_main_dwf_karak_kadrin with subtype dwf_lord   : [25, 07 2021 14:00:47]
+Character cqi is 123 old character cqi is: 123   : [25, 07 2021 14:00:47]
+Character has preexisting units   : [25, 07 2021 14:00:47]
+Killing character and force: 123   : [25, 07 2021 14:00:47]
+FINISHED
+
+FINISHED
+
+Character is in region: wh_main_couronne_et_languille_couronne   : [25, 07 2021 14:00:47]
 FINISHED
 

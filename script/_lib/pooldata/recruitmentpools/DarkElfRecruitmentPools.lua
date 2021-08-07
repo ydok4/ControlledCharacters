@@ -231,12 +231,30 @@ function GetDarkElfRecruitmentPoolData()
                     SubPoolMaxSize = 3,
                 },
                 BeastMasterPool = {
-                    SubPoolInitialMinSize = 1,
-                    SubPoolMaxSize = 2,
+                    SubPoolInitialMinSize = 0,
+                    SubPoolMaxSize = 1,
                 },
                 SupremeSorceressPool = {
                     SubPoolInitialMinSize = 1,
                     SubPoolMaxSize = 2,
+                },
+            },
+        },
+        -- Rakarth
+        wh2_twa03_def_rakarth = {
+            FactionPools = {
+                -- Lords
+                DreadLords = {
+                    SubPoolInitialMinSize = 1,
+                    SubPoolMaxSize = 2,
+                },
+                BeastMasterPool = {
+                    SubPoolInitialMinSize = 1,
+                    SubPoolMaxSize = 3,
+                },
+                SupremeSorceressPool = {
+                    SubPoolInitialMinSize = 1,
+                    SubPoolMaxSize = 1,
                 },
             },
         },

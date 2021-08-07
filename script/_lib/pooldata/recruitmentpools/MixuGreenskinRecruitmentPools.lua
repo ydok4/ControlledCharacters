@@ -4,16 +4,6 @@ function GetMixuGreenskinRecruitmentPoolData()
         -- Default pool distribution
         wh_main_sc_grn_greenskins = {
             FactionPools = {
-                GreenskinWarbosses = {
-                    AgentSubTypes = {
-                        grn_orc_warboss = {
-                            MaximumPercentage = 50,
-                        },
-                        grn_savage_orc_warboss = {
-                            MaximumPercentage = 50,
-                        },
-                    },
-                },
                 GreenskinShamans = {
                     AgentSubTypes = {
                         grn_goblin_great_shaman = {
@@ -24,7 +14,7 @@ function GetMixuGreenskinRecruitmentPoolData()
                         },
                         grn_orc_great_shaman = {
                             MaximumPercentage = 33,
-                        }
+                        },
                     },
                     SubPoolInitialMinSize = 0,
                     SubPoolMaxSize = 1,
